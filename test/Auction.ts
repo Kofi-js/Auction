@@ -11,34 +11,34 @@ describe("SealedBidAuction", () => {
     const NFT = await hre.ethers.getContractFactory('OnChainNFT');
     const nft = await NFT.deploy(owner,"Suspicious","SUS");
 
-    const SealedBidAuction = await hre.ethers.getContractFactory("SealedBidAuction");
+    const SealedBidAuction = await hre.ethers.getContractFactory('SealedBidAuction');
     const auction = await SealedBidAuction.deploy();
 
     // Setup initial auction
-    await nft.mint(seller.address, 1);
+    await nft.safeMint(seller.address,1);
     await nft.connect(seller).approve(await auction.getAddress(), 1);
 
     const tx = await auction.connect(seller).createAuction(
-      await nft.getAddress(),
-      1,
-      hre.ethers.parseEther("1"), // minPrice
-      3600n, // biddingTime: 1 hour
-      1800n  // revealTime: 30 minutes
-    );
-
-    const receipt = await tx.wait();
-    const event = receipt?.logs.find(log => log.fragment?.name === "AuctionCreated");
-    const auctionId = event?.args?.[0];
-
-    return { 
-      auction, 
-      nft, 
-      auctionId,
-      owner, 
-      seller, 
-      bidder1, 
-      bidder2 
-    };
+        await nft.getAddress(),
+        1,
+        hre.ethers.parseEther("1"),
+        3600n,
+        1800n
+      );
+      
+      const receipt = await tx.wait();
+      if (!receipt) {
+        throw new Error("Transaction receipt is null");
+      }
+      
+      // Correctly parse the event using the contract's filter
+      const filter = auction.filters.AuctionCreated();
+      const events = await auction.queryFilter(filter, receipt.blockNumber, receipt.blockNumber);
+      if (events.length === 0) {
+        throw new Error("AuctionCreated event not emitted");
+      }
+      const auctionId = events[0].args.auctionId;
+    return {auction, nft, auctionId,owner, seller,bidder1, bidder2};
   }
 
   describe("Auction Flow", () => {

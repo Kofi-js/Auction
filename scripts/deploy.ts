@@ -29,8 +29,8 @@ async function main() {
     
     // Deploy Mock NFT for testing
     console.log("\nDeploying MockNFT...");
-    const MockNFT = await ethers.getContractFactory("MockNFT");
-    const mockNFT = await MockNFT.deploy();
+    const Nft = await ethers.getContractFactory("MockNFT");
+    const mockNFT = await Nft.deploy();
     await mockNFT.waitForDeployment();
     const mockNFTAddress = await mockNFT.getAddress();
     console.log(`MockNFT deployed to: ${mockNFTAddress}`);

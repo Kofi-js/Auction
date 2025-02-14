@@ -8,32 +8,18 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract OnChainNFT is ERC721 {
     using Strings for uint256;
 
-    uint256 private _tokenIdCounter; // Tracks the next token ID to mint
-    mapping(uint256 => bool) public isPaidTicket; // Tracks whether a ticket is paid
-
     constructor(
         address _owner,
         string memory _name,
         string memory _symbol
     ) ERC721(_name, _symbol) {
         require(_owner != address(0), "Invalid owner address");
-        _tokenIdCounter = 1; 
+
     }
 
     // Mint a generic ticket (used for free events)
-    function mint(address to) public {
-        uint256 tokenId = _tokenIdCounter;
+  function safeMint(address to, uint256 tokenId) public {
         _safeMint(to, tokenId);
-        isPaidTicket[tokenId] = false; 
-        _tokenIdCounter++; 
-    }
-
-    // Mint a paid ticket with special metadata
-    function mintPaidTicket(address to) public {
-        uint256 tokenId = _tokenIdCounter;
-        _safeMint(to, tokenId);
-        isPaidTicket[tokenId] = true; 
-        _tokenIdCounter++; 
     }
 
     // Generate tokenURI with dynamic metadata
@@ -41,9 +27,6 @@ contract OnChainNFT is ERC721 {
         ownerOf(tokenId); 
 
         string memory name = string(abi.encodePacked("OnChainNFT #", tokenId.toString()));
-        string memory description = isPaidTicket[tokenId] 
-            ? "This is a PAID on-chain NFT ticket." 
-            : "This is a FREE on-chain NFT ticket.";
         string memory image = generateBase64Image();
 
         string memory json = Base64.encode(
@@ -51,7 +34,6 @@ contract OnChainNFT is ERC721 {
                 string(
                     abi.encodePacked(
                         '{"name":"', name, '",',
-                        '"description":"', description, '",',
                         '"image":"data:image/svg+xml;base64,', image, '"}'
                     )
                 )

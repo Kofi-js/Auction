@@ -25,7 +25,7 @@ async function createAuction() {
 
   // Mint NFT to seller
   console.log("\nMinting NFT to seller...");
-  await nft.connect(owner).mint(seller.address, 1);
+  await nft.connect(owner).safeMint(seller.address, 1);
   
   // Approve auction contract
   console.log("Approving auction contract...");
@@ -48,7 +48,7 @@ async function createAuction() {
   if (receipt) {
     const event = receipt.events?.find(e => e.event === "AuctionCreated");
     const auctionId = event?.args?.auctionId;
-    console.log(`Auction created! ID: ${auctionId}, Transaction: ${receipt.hash}`);
+    console.log(`Auction created! ID: ${auctionId}, Transaction: ${receipt.transactionHash}`);
     return auctionId;
   } else {
     throw new Error("Failed to create auction, receipt is null");
