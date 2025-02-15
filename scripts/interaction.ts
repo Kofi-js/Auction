@@ -46,9 +46,9 @@ async function createAuction() {
 
   const receipt = await tx.wait();
   if (receipt) {
-    const event = receipt.events?.find(e => e.event === "AuctionCreated");
+    const event = receipt.logs.map(log => auction.interface.parseLog(log)).find(e => e && e.name === "AuctionCreated");
     const auctionId = event?.args?.auctionId;
-    console.log(`Auction created! ID: ${auctionId}, Transaction: ${receipt.transactionHash}`);
+    console.log(`Auction created! ID: ${auctionId}, Transaction: ${receipt.hash}`);
     return auctionId;
   } else {
     throw new Error("Failed to create auction, receipt is null");
@@ -106,7 +106,7 @@ async function endAuction(auctionId: number) {
 
   const receipt = await tx.wait();
   if (receipt) {
-    const event = receipt.events?.find(e => e.event === "AuctionEnded");
+    const event = receipt.logs.map(log => auction.interface.parseLog(log)).find(e => e && e.name === "AuctionEnded");
     console.log(`Auction ended! Winner: ${event?.args?.winner}, Amount: ${ethers.formatEther(event?.args?.amount)} ETH`);
   } else {
     throw new Error("Failed to end auction, receipt is null");
